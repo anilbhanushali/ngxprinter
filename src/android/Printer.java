@@ -1,4 +1,4 @@
-package com.anil.printerplugin;
+package org.anil.thermalprinter;
 
 import com.printer.ZQPrinter;
 import org.apache.cordova.CallbackContext;

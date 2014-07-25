@@ -44,12 +44,12 @@ public class Printer extends CordovaPlugin {
 		    	//call print text method
 		    	JSONObject arg_object = args.getJSONObject(0);
 	             String text = arg_object.getString("text");
-	             
+	             String macid = arg_object.getString("macaddress");
 	             int alignment = arg_object.getInt("alignment");
 	             int attribute = arg_object.getInt("attribute");
 	             int textsize = arg_object.getInt("textsize");
 	             
-	             PrintText(text, alignment, attribute, textsize);
+	             PrintText(macid,text, alignment, attribute, textsize);
 	             callbackContext.success();
 	             return true;
 		    }
@@ -62,11 +62,17 @@ public class Printer extends CordovaPlugin {
 		}	 
 	}
 	
-	private boolean PrintText(String text,int alignment,int attribute,int textsize){
-		
-		PrinterService.PrintText(text, alignment, attribute, textsize);
-		if(PrinterService.GetStatus() == ZQPrinter.AB_SUCCESS){
-			return true;
+	private boolean PrintText(String macid,String text,int alignment,int attribute,int textsize){
+		//connect to printer
+		int returnvalue=ZQPrinter.AB_SUCCESS;
+		returnvalue = Connect(macid);
+		if(returnvalue==ZQPrinter.AB_SUCCESS){
+			PrinterService.PrintText(text, alignment, attribute, textsize);
+			if(PrinterService.GetStatus() == ZQPrinter.AB_SUCCESS){
+				return true;
+			}else{
+				return false;
+			}
 		}else{
 			return false;
 		}

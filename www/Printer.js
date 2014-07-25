@@ -1,5 +1,5 @@
 var Printer = {
-    connectEvent: function(address, successCallback, errorCallback) {
+    connectPrinter: function(address, successCallback, errorCallback) {
  		cordova.exec(
             successCallback, // success callback function
             errorCallback, // error callback function
@@ -7,6 +7,20 @@ var Printer = {
             'connect', // with this action name
             [{                  // and this array of custom arguments to create our entry
                 "macaddress": address
+            }]
+        ); 
+    },
+    PrintText : function(text, alignment, attribute, textsize,successCallback,errorCallback){
+        cordova.exec(
+            successCallback, // success callback function
+            errorCallback, // error callback function
+            'Printer', // mapped to our native Java class called "Printer"
+            'printtext', // with this action name
+            [{                  // and this array of custom arguments to create our entry
+                "text": text,
+                "alignment":alignment,
+                "attribute":attribute,
+                "textsize":textsize
             }]
         ); 
     }

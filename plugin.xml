@@ -21,6 +21,7 @@
             </feature>
         </config-file>
  
-        <source-file src="src/android/Printer.java" target-dir="src/org/anil/thermalprinter" />      
+        <source-file src="src/android/Printer.java" target-dir="src/org/anil/thermalprinter" />
+        <source-file src="src/android/libs/ZQPrinter.jar" target-dir="libs" />      
      </platform>          
 </plugin>

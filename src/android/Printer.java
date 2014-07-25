@@ -7,8 +7,6 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 import android.util.Log;
-import android.widget.Toast;
-import android.widget.EditText;
 import android.app.Activity;
 import android.content.Intent;
 import java.io.IOException;
@@ -23,19 +21,9 @@ public class Printer extends CordovaPlugin {
     
     public Printer()
     {
-    	Log.e(TAG, "+++ ON Contructor +++"); 
+    	Log.e(TAG, "+++ ON Contructor +++");
+    	PrinterService = new ZQPrinter();
     	
-    }
-    
-    /** Called when the activity is first created. */
-    @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-        CheckGC("onCreate_Start" );
-        Log.e(TAG, "+++ ON CREATE +++");        
-        PrinterService = new ZQPrinter();
-        CheckGC("onCreate_End" );
     }
     
     
@@ -109,13 +97,13 @@ public class Printer extends CordovaPlugin {
     	int nRet = PrinterService.Connect(address);
         if ( nRet == 0 ) 
         {
-        	Toast.makeText(this,"Connection successful",Toast.LENGTH_SHORT).show();
+        	
             conn = true;
         }
         else
         {
         	Log.e("Test", String.valueOf(nRet));
-            Toast.makeText(this,"check printer & bluetooth",Toast.LENGTH_SHORT).show();
+            
             conn = false;               
         }
         CheckGC("Connect_End" );            

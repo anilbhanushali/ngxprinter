@@ -74,7 +74,7 @@ public class Printer extends CordovaPlugin {
 		}	 
 	}
 	
-	void boolean PrintText(String text,int alignment,int attribute,int textsize){
+	private boolean PrintText(String text,int alignment,int attribute,int textsize){
 		
 		PrinterService.PrintText(text, alignment, attribute, textsize);
 		if(PrinterService.GetStatus() == ZQPrinter.AB_SUCCESS){
@@ -104,7 +104,7 @@ public class Printer extends CordovaPlugin {
     	Log.i(TAG,FunctionName+"_After Memorypercentage"+Memorypercentage+"% VmtotalMemory["+VmtotalMemory+"] "+"VmfreeMemory["+VmfreeMemory+"] "+"VmmaxMemory["+VmmaxMemory+"] ");
     }
 
-	void boolean Connect(String address){
+	private boolean Connect(String address){
 		CheckGC("Connect_Start" );
     	int nRet = PrinterService.Connect(address);
         if ( nRet == 0 ) 

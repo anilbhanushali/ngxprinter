@@ -10,13 +10,14 @@ var Printer = {
             }]
         ); 
     },
-    PrintText : function(text, alignment, attribute, textsize,successCallback,errorCallback){
+    PrintText : function(macaddress,text, alignment, attribute, textsize,successCallback,errorCallback){
         cordova.exec(
             successCallback, // success callback function
             errorCallback, // error callback function
             'Printer', // mapped to our native Java class called "Printer"
             'printtext', // with this action name
-            [{                  // and this array of custom arguments to create our entry
+            [{   
+                "macaddress":macaddress,// and this array of custom arguments to create our entry
                 "text": text,
                 "alignment":alignment,
                 "attribute":attribute,

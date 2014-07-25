@@ -37,6 +37,8 @@ public class Printer extends CordovaPlugin {
         PrinterService = new ZQPrinter();
         CheckGC("onCreate_End" );
     }
+    
+    
 	@Override
 	public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
 		try {
@@ -58,6 +60,7 @@ public class Printer extends CordovaPlugin {
 	             int alignment = arg_object.getInt("alignment");
 	             int attribute = arg_object.getInt("attribute");
 	             int textsize = arg_object.getInt("textsize");
+	             
 	             PrintText(text, alignment, attribute, textsize);
 	             callbackContext.success();
 	             return true;
@@ -71,24 +74,7 @@ public class Printer extends CordovaPlugin {
 		}	 
 	}
 	
-	void boolean Connect(address){
-		CheckGC("Connect_Start" );
-    	int nRet = PrinterService.Connect(address);
-        if ( nRet == 0 ) {
-        	Toast.makeText(this,"Connection successful",Toast.LENGTH_SHORT).show();
-            conn = true;
-        }
-        else {
-        	Log.e("Test", String.valueOf(nRet));
-            Toast.makeText(this,"check printer & bluetooth",Toast.LENGTH_SHORT).show();
-            conn = false;               
-        }
-        CheckGC("Connect_End" );            
-        return true; 
-	}
-	
-	
-	void boolean PrintText(text,alignment,attribute,textsize){
+	void boolean PrintText(String text,int alignment,int attribute,int textsize){
 		
 		PrinterService.PrintText(text, alignment, attribute, textsize);
 		if(PrinterService.GetStatus() == ZQPrinter.AB_SUCCESS){
@@ -117,4 +103,22 @@ public class Printer extends CordovaPlugin {
      	  Memorypercentage=((VmtotalMemory-VmfreeMemory)*100)/VmtotalMemory; 
     	Log.i(TAG,FunctionName+"_After Memorypercentage"+Memorypercentage+"% VmtotalMemory["+VmtotalMemory+"] "+"VmfreeMemory["+VmfreeMemory+"] "+"VmmaxMemory["+VmmaxMemory+"] ");
     }
+
+	void boolean Connect(String address){
+		CheckGC("Connect_Start" );
+    	int nRet = PrinterService.Connect(address);
+        if ( nRet == 0 ) 
+        {
+        	Toast.makeText(this,"Connection successful",Toast.LENGTH_SHORT).show();
+            conn = true;
+        }
+        else
+        {
+        	Log.e("Test", String.valueOf(nRet));
+            Toast.makeText(this,"check printer & bluetooth",Toast.LENGTH_SHORT).show();
+            conn = false;               
+        }
+        CheckGC("Connect_End" );            
+        return true; 
+	}
 }

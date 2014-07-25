@@ -64,9 +64,9 @@ public class Printer extends CordovaPlugin {
 	
 	private boolean PrintText(String macid,String text,int alignment,int attribute,int textsize){
 		//connect to printer
-		int returnvalue=ZQPrinter.AB_SUCCESS;
+		boolean returnvalue=false;
 		returnvalue = Connect(macid);
-		if(returnvalue==ZQPrinter.AB_SUCCESS){
+		if(returnvalue){
 			PrinterService.PrintText(text, alignment, attribute, textsize);
 			if(PrinterService.GetStatus() == ZQPrinter.AB_SUCCESS){
 				return true;

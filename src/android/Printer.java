@@ -36,8 +36,15 @@ public class Printer extends CordovaPlugin {
 		    	JSONObject arg_object = args.getJSONObject(0);
 	             String macid = arg_object.getString("macaddress");
 	             Connect(macid);
-                 callbackContext.success();
-	             return true;
+	            if(conn){
+                	callbackContext.success();
+                	return true;
+             	}else
+             	{
+             		callbackContext.error("unable to connect");
+             		return false;
+             	}
+	             
 		    }
 		    if (ACTION_PRINT_TEXT.equals(action)) { 
 		    	
@@ -49,9 +56,15 @@ public class Printer extends CordovaPlugin {
 	             int attribute = arg_object.getInt("attribute");
 	             int textsize = arg_object.getInt("textsize");
 	             
-	             PrintText(macid,text, alignment, attribute, textsize);
-	             callbackContext.success();
-	             return true;
+	             boolean result  = PrintText(macid,text, alignment, attribute, textsize);
+	             if(result){
+	             	callbackContext.success();
+	             	return true;
+	             }else{
+	             	callbackContext.error("Unable to print");
+	             	return false;
+	             }
+	             
 		    }
 		    callbackContext.error("Invalid action");
 		    return false;

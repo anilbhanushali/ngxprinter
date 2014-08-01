@@ -14,7 +14,7 @@ import java.io.IOException;
 public class Printer extends CordovaPlugin {
 	public static final String ACTION_CONNECT_PRINTER = "connect";
 	public static final String ACTION_PRINT_TEXT = "printtext";
-	
+	public static final String ACTION_PRINT_IMAGE="printimage";
 	private static final String TAG = "Test";
     private ZQPrinter PrinterService = null;   
     private boolean conn = false;
@@ -49,7 +49,7 @@ public class Printer extends CordovaPlugin {
 		    if (ACTION_PRINT_TEXT.equals(action)) { 
 		    	
 		    	//call print text method
-		    	JSONObject arg_object = args.getJSONObject(0);
+		    	 JSONObject arg_object = args.getJSONObject(0);
 	             String text = arg_object.getString("text");
 	             String macid = arg_object.getString("macaddress");
 	             int alignment = arg_object.getInt("alignment");
@@ -65,6 +65,23 @@ public class Printer extends CordovaPlugin {
 	             	return false;
 	             }
 	             
+		    }
+		    if(ACTION_PRINT_IMAGE.equals(action)){
+		    	JSONObject arg_object = args.getJSONObject(0);
+	            String file = arg_object.getString("file");
+	            String macid = arg_object.getString("macaddress");
+	            int width = arg_object.getInt("width");
+	            int alignment = arg_object.getInt("alignment");
+	            int level = arg_object.getInt("level");
+	            
+	            boolean result  = PrintImage(macid,file, width, alignment, level);
+	             if(result){
+	             	callbackContext.success();
+	             	return true;
+	             }else{
+	             	callbackContext.error("Unable to print");
+	             	return false;
+	             }
 		    }
 		    callbackContext.error("Invalid action");
 		    return false;
@@ -91,6 +108,21 @@ public class Printer extends CordovaPlugin {
 		}
 	}
 	
+	private boolean PrintImage(String macid,String file, int width,int alignment,int level){
+		//connect to printer
+				boolean returnvalue=false;
+				returnvalue = Connect(macid);
+				if(returnvalue){
+					PrinterService.PrintImage(file, width, alignment, level);
+					if(PrinterService.GetStatus() == ZQPrinter.AB_SUCCESS){
+						return true;
+					}else{
+						return false;
+					}
+				}else{
+					return false;
+				}
+	}
 	void CheckGC(String FunctionName )
     {
     	long VmfreeMemory =Runtime.getRuntime().freeMemory();

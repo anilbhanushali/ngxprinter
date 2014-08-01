@@ -24,6 +24,21 @@ var Printer = {
                 "textsize":textsize
             }]
         ); 
+    },
+    PrintImage : function(macaddress,file,width, alignment, level,successCallback,errorCallback){
+        cordova.exec(
+            successCallback, // success callback function
+            errorCallback, // error callback function
+            'Printer', // mapped to our native Java class called "Printer"
+            'printimage', // with this action name
+            [{   
+                "macaddress":macaddress,// and this array of custom arguments to create our entry
+                "file": file,
+                "alignment":alignment,
+                "width":width,
+                "level":level
+            }]
+        );
     }
 }
 module.exports = Printer;

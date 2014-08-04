@@ -25,7 +25,7 @@ var Printer = {
             }]
         ); 
     },
-    PrintImage : function(macaddress,file,width, alignment, level,successCallback,errorCallback){
+    PrintImage : function(macaddress,file,successCallback,errorCallback){
         cordova.exec(
             successCallback, // success callback function
             errorCallback, // error callback function
@@ -33,10 +33,7 @@ var Printer = {
             'printimage', // with this action name
             [{   
                 "macaddress":macaddress,// and this array of custom arguments to create our entry
-                "file": file,
-                "alignment":alignment,
-                "width":width,
-                "level":level
+                "file": file
             }]
         );
     }

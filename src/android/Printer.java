@@ -3,13 +3,27 @@ package org.anil.thermalprinter;
 import com.printer.ZQPrinter;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
+import org.apache.http.client.protocol.ClientContext;
 import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
+
+import android.net.Uri;
+import android.os.Environment;
 import android.util.Log;
 import android.app.Activity;
-import android.content.Intent;
+import android.content.Context;
+import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class Printer extends CordovaPlugin {
 	public static final String ACTION_CONNECT_PRINTER = "connect";
@@ -18,7 +32,7 @@ public class Printer extends CordovaPlugin {
 	private static final String TAG = "Test";
     private ZQPrinter PrinterService = null;   
     private boolean conn = false;
-    
+    private Context ctx ;
     public Printer()
     {
     	Log.e(TAG, "+++ ON Contructor +++");
@@ -30,6 +44,8 @@ public class Printer extends CordovaPlugin {
 	@Override
 	public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
 		try {
+			ctx = cordova.getActivity().getApplicationContext();
+			
 		    if (ACTION_CONNECT_PRINTER.equals(action)) { 
 		    	
 		    	//call connect printer method
@@ -70,11 +86,8 @@ public class Printer extends CordovaPlugin {
 		    	JSONObject arg_object = args.getJSONObject(0);
 	            String file = arg_object.getString("file");
 	            String macid = arg_object.getString("macaddress");
-	            int width = arg_object.getInt("width");
-	            int alignment = arg_object.getInt("alignment");
-	            int level = arg_object.getInt("level");
 	            
-	            boolean result  = PrintImage(macid,file, width, alignment, level);
+	            boolean result  = PrintImage(macid,file);
 	             if(result){
 	             	callbackContext.success();
 	             	return true;
@@ -108,20 +121,62 @@ public class Printer extends CordovaPlugin {
 		}
 	}
 	
-	private boolean PrintImage(String macid,String file, int width,int alignment,int level){
-		//connect to printer
-				boolean returnvalue=false;
-				returnvalue = Connect(macid);
-				if(returnvalue){
-					PrinterService.PrintImage(file, width, alignment, level);
-					if(PrinterService.GetStatus() == ZQPrinter.AB_SUCCESS){
-						return true;
-					}else{
-						return false;
+	private boolean PrintImage(String macid,String file){
+				
+				InputStream input;
+				String path="";
+				boolean result;
+				try{
+					input = ctx.getAssets().open("www/"+file);
+					int size = input.available();
+		             byte[] buffer = new byte[size];
+		             input.read(buffer);
+		             input.close();
+		             
+		             String strpngFile = ctx.getApplicationContext().getFilesDir().getAbsolutePath() + "/"+file;
+		             File fileobj = new File(strpngFile);
+		     		if (!fileobj.exists())
+		     		{
+		     			try {
+		 					FileOutputStream fs = new FileOutputStream(strpngFile);
+		 		            fs.write(buffer, 0, size);
+		 				} catch (IOException e) {
+		 					// TODO Auto-generated catch block
+		 					e.printStackTrace();
+		 					result = false;
+		 				}
+		     		}
+		     		//////
+		     		boolean returnvalue=false;
+		     		Bitmap bm = BitmapFactory.decodeFile(strpngFile);
+		     		returnvalue = Connect(macid);
+					if(returnvalue)
+					{
+			     		PrinterService.LineFeed(1);
+						PrinterService.PrintBitmap1D76(bm, 1);
+						//PrinterService.SetImage(1, strpngFile, 1, 1, 50);
+						//PrinterService.LineFeed(1);
+						//PrinterService.PrintImage1B2A(strpngFile, 1);
+						//PrinterService.LineFeed(1);
+						//PrinterService.PrintImage1D76(strpngFile,1);
+						
+						if(PrinterService.GetStatus() == ZQPrinter.AB_SUCCESS){
+							result = true;
+						}else{
+							result = false;
+						}
+		     		}else
+		     		{
+						result = false;
 					}
-				}else{
-					return false;
+		             
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					result = false;
 				}
+				return result;
+				
 	}
 	void CheckGC(String FunctionName )
     {

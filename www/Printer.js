@@ -1,4 +1,4 @@
-var Printer = {
+cordova.define("org.anil.thermalprinter.Printer", function(require, exports, module) { var Printer = {
     connectPrinter: function(address, successCallback, errorCallback) {
  		cordova.exec(
             successCallback, // success callback function
@@ -39,3 +39,4 @@ var Printer = {
     }
 }
 module.exports = Printer;
+});

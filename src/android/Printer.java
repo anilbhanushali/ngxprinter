@@ -153,7 +153,7 @@ public class Printer extends CordovaPlugin {
 					if(returnvalue)
 					{
 			     		PrinterService.LineFeed(1);
-						PrinterService.PrintBitmap1D76(bm, 1);
+						PrinterService.PrintBitmap1D76(bm, 0);
 						//PrinterService.SetImage(1, strpngFile, 1, 1, 50);
 						//PrinterService.LineFeed(1);
 						//PrinterService.PrintImage1B2A(strpngFile, 1);

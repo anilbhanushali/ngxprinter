@@ -1,6 +1,6 @@
-cordova.define("org.anil.thermalprinter.Printer", function(require, exports, module) { var Printer = {
+module.exports = {
     connectPrinter: function(address, successCallback, errorCallback) {
- 		cordova.exec(
+        cordova.exec(
             successCallback, // success callback function
             errorCallback, // error callback function
             'Printer', // mapped to our native Java class called "Printer"
@@ -37,6 +37,4 @@ cordova.define("org.anil.thermalprinter.Printer", function(require, exports, mod
             }]
         );
     }
-}
-module.exports = Printer;
-});
+};

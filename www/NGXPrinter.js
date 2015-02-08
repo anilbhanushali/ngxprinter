@@ -15,7 +15,8 @@ module.exports = {
             successCallback,
             errorCallback,
             'NGXPrinter',
-            'showdevicelist'
+            'showdevicelist',
+            []
         );
     },
     PrintText : function(macaddress,text, alignment, attribute, textsize,successCallback,errorCallback){

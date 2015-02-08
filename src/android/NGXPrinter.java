@@ -1,7 +1,9 @@
-package org.anil.thermalprinter;
+package org.betterlife.printerngx;
 
-import com.printer.ZQPrinter;
+import com.ngx.*;
+
 import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaActivity;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.http.client.protocol.ClientContext;
 import org.json.JSONObject;
@@ -10,9 +12,12 @@ import org.json.JSONException;
 
 import android.net.Uri;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -25,41 +30,78 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class Printer extends CordovaPlugin {
+public class NGXPrinter extends CordovaPlugin {
 	public static final String ACTION_CONNECT_PRINTER = "connect";
 	public static final String ACTION_PRINT_TEXT = "printtext";
 	public static final String ACTION_PRINT_IMAGE="printimage";
+	public static final String ACTION_SHOW_DEVICE="showdevicelist";
+	
 	private static final String TAG = "Test";
-    private ZQPrinter PrinterService = null;   
+    public static BluetoothPrinter mBtp = BluetoothPrinter.INSTANCE;
     private boolean conn = false;
     private Context ctx ;
-    public Printer()
-    {
+    private String mConnectedDeviceName = "";
+    Activity activity ;
+    private CallbackContext callbackContext;
+    
+    public NGXPrinter(){
     	Log.e(TAG, "+++ ON Contructor +++");
-    	PrinterService = new ZQPrinter();
-    	
     }
     
-    
+    private Handler mHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case BluetoothPrinter.MESSAGE_STATE_CHANGE:
+				switch (msg.arg1) {
+				case BluetoothPrinter.STATE_CONNECTED:
+					conn=true;
+					callbackContext.success("Connected to : "+mConnectedDeviceName);
+					Log.i(TAG,"connected to : "+mConnectedDeviceName);
+					break;
+				case BluetoothPrinter.STATE_CONNECTING:
+					Log.i(TAG,"connecting");
+					callbackContext.success("Connecting..");
+					break;
+				case BluetoothPrinter.STATE_LISTEN:
+				case BluetoothPrinter.STATE_NONE:
+					callbackContext.success("Not Connected");
+					Log.i(TAG,"Not Connected");
+					break;
+				}
+				break;
+			case BluetoothPrinter.MESSAGE_DEVICE_NAME:
+				// save the connected device's name
+				mConnectedDeviceName = msg.getData().getString(
+						BluetoothPrinter.DEVICE_NAME);
+				break;
+			case BluetoothPrinter.MESSAGE_STATUS:
+				String status = msg.getData().getString(
+						BluetoothPrinter.STATUS_TEXT);
+				Log.i(TAG,"Status : "+status);
+				callbackContext.success(status);
+				break;
+			default:
+				break;
+			}
+		}
+    };
 	@Override
 	public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+		
 		try {
-			ctx = cordova.getActivity().getApplicationContext();
 			
-		    if (ACTION_CONNECT_PRINTER.equals(action)) { 
+			this.callbackContext = callbackContext;
+			ctx = cordova.getActivity().getApplicationContext();
+			activity = (Activity)cordova.getActivity();
+			mBtp.initService(ctx, mHandler);
+		    
+			if (ACTION_CONNECT_PRINTER.equals(action)) { 
 		    	
 		    	//call connect printer method
 		    	JSONObject arg_object = args.getJSONObject(0);
 	             String macid = arg_object.getString("macaddress");
 	             Connect(macid);
-	            if(conn){
-                	callbackContext.success();
-                	return true;
-             	}else
-             	{
-             		callbackContext.error("unable to connect");
-             		return false;
-             	}
 	             
 		    }
 		    if (ACTION_PRINT_TEXT.equals(action)) { 
@@ -72,60 +114,37 @@ public class Printer extends CordovaPlugin {
 	             int attribute = arg_object.getInt("attribute");
 	             int textsize = arg_object.getInt("textsize");
 	             
-	             boolean result  = PrintText(macid,text, alignment, attribute, textsize);
-	             if(result){
-	             	callbackContext.success();
-	             	return true;
-	             }else{
-	             	callbackContext.error("Unable to print");
-	             	return false;
-	             }
-	             
+	             PrintText(macid,text, alignment, attribute, textsize);
 		    }
+		    
 		    if(ACTION_PRINT_IMAGE.equals(action)){
 		    	JSONObject arg_object = args.getJSONObject(0);
 	            String file = arg_object.getString("file");
 	            String macid = arg_object.getString("macaddress");
-	            
-	            boolean result  = PrintImage(macid,file);
-	             if(result){
-	             	callbackContext.success();
-	             	return true;
-	             }else{
-	             	callbackContext.error("Unable to print");
-	             	return false;
-	             }
+	            PrintImage(macid,file);
 		    }
-		    callbackContext.error("Invalid action");
-		    return false;
+		    if(ACTION_SHOW_DEVICE.endsWith(action)){
+		    	ShowDeviceList();
+		    }
+		    return true;
 		} catch(Exception e) {
 		    System.err.println("Exception: " + e.getMessage());
 		    callbackContext.error(e.getMessage());
 		    return false;
 		}	 
+	};
+	
+	
+	private void PrintText(String macid,String text,int alignment,int attribute,int textsize){
+		
+		mBtp.printText(text);
 	}
 	
-	private boolean PrintText(String macid,String text,int alignment,int attribute,int textsize){
-		//connect to printer
-		boolean returnvalue=false;
-		returnvalue = Connect(macid);
-		if(returnvalue){
-			PrinterService.PrintText(text, alignment, attribute, textsize);
-			if(PrinterService.GetStatus() == ZQPrinter.AB_SUCCESS){
-				return true;
-			}else{
-				return false;
-			}
-		}else{
-			return false;
-		}
-	}
-	
-	private boolean PrintImage(String macid,String file){
+	private void PrintImage(String macid,String file){
 				
 				InputStream input;
 				String path="";
-				boolean result;
+				boolean result=true;
 				try{
 					input = ctx.getAssets().open("www/"+file);
 					int size = input.available();
@@ -148,34 +167,17 @@ public class Printer extends CordovaPlugin {
 		     		}
 		     		//////
 		     		boolean returnvalue=false;
-		     		Bitmap bm = BitmapFactory.decodeFile(strpngFile);
-		     		returnvalue = Connect(macid);
-					if(returnvalue)
-					{
-			     		PrinterService.LineFeed(1);
-						PrinterService.PrintBitmap1D76(bm, 0);
-						//PrinterService.SetImage(1, strpngFile, 1, 1, 50);
-						//PrinterService.LineFeed(1);
-						//PrinterService.PrintImage1B2A(strpngFile, 1);
-						//PrinterService.LineFeed(1);
-						//PrinterService.PrintImage1D76(strpngFile,1);
-						
-						if(PrinterService.GetStatus() == ZQPrinter.AB_SUCCESS){
-							result = true;
-						}else{
-							result = false;
-						}
-		     		}else
-		     		{
-						result = false;
-					}
+		     		//Bitmap bm = BitmapFactory.decodeFile(strpngFile);
+		     		//returnvalue = Connect(macid);
+					//mBtp.printImage(buffer);
+					mBtp.setLogo(strpngFile, true, false, 127);
+					mBtp.printLogo();	
 		             
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 					result = false;
 				}
-				return result;
 				
 	}
 	void CheckGC(String FunctionName )
@@ -197,22 +199,41 @@ public class Printer extends CordovaPlugin {
      	  Memorypercentage=((VmtotalMemory-VmfreeMemory)*100)/VmtotalMemory; 
     	Log.i(TAG,FunctionName+"_After Memorypercentage"+Memorypercentage+"% VmtotalMemory["+VmtotalMemory+"] "+"VmfreeMemory["+VmfreeMemory+"] "+"VmmaxMemory["+VmmaxMemory+"] ");
     }
+	private void ShowDeviceList(){
+		mBtp.showDeviceList(activity);
+	}
+	private void Connect(String address){
+		
+		if(!conn)
+		{
+			mBtp.connectToPrinterUsingMacAddress(address);
+		}
+	}
+	
+	@Override
+	public void onPause(boolean multitasking) {
+		conn=false;
+		mBtp.onActivityPause();
+		super.onPause(multitasking);
+	}
 
-	private boolean Connect(String address){
-		CheckGC("Connect_Start" );
-    	int nRet = PrinterService.Connect(address);
-        if ( nRet == 0 ) 
-        {
-        	
-            conn = true;
-        }
-        else
-        {
-        	Log.e("Test", String.valueOf(nRet));
-            
-            conn = false;               
-        }
-        CheckGC("Connect_End" );            
-        return true; 
+	@Override
+	public void onResume(boolean multitasking) {
+		mBtp.onActivityResume();
+		DebugLog.logTrace("onResume");
+		super.onResume(multitasking);
+	}
+
+	@Override
+	public void onDestroy() {
+		conn=false;
+		mBtp.onActivityDestroy();
+		super.onDestroy();
+	}
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		mBtp.onActivityResult(requestCode, resultCode, data,activity);
 	}
 }

@@ -3,18 +3,26 @@ module.exports = {
         cordova.exec(
             successCallback, // success callback function
             errorCallback, // error callback function
-            'Printer', // mapped to our native Java class called "Printer"
+            'NGXPrinter', // mapped to our native Java class called "NGXPrinter"
             'connect', // with this action name
             [{                  // and this array of custom arguments to create our entry
                 "macaddress": address
             }]
         ); 
     },
+    showDeviceList: function(){
+        cordova.exec(
+            successCallback,
+            errorCallback,
+            'NGXPrinter',
+            'showdevicelist'
+        );
+    },
     PrintText : function(macaddress,text, alignment, attribute, textsize,successCallback,errorCallback){
         cordova.exec(
             successCallback, // success callback function
             errorCallback, // error callback function
-            'Printer', // mapped to our native Java class called "Printer"
+            'NGXPrinter', // mapped to our native Java class called "NGXPrinter"
             'printtext', // with this action name
             [{   
                 "macaddress":macaddress,// and this array of custom arguments to create our entry
@@ -29,7 +37,7 @@ module.exports = {
         cordova.exec(
             successCallback, // success callback function
             errorCallback, // error callback function
-            'Printer', // mapped to our native Java class called "Printer"
+            'NGXPrinter', // mapped to our native Java class called "NGXPrinter"
             'printimage', // with this action name
             [{   
                 "macaddress":macaddress,// and this array of custom arguments to create our entry

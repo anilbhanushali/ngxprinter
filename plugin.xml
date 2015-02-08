@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
  
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
-           id="org.anil.thermalprinter"
+           id="org.betterlife.printerngx"
       version="0.1.0">
-    <name>Printer</name>
-    <description>Plugin for printing using bluetooth thermal printer</description>
+    <name>NGXPrinter</name>
+    <description>Plugin for printing using bluetooth NGX thermal printer</description>
     <license>MIT</license>
     <keywords>phonegap,printer</keywords>
  
  
-    <js-module src="www/Printer.js" name="Printer">
-        <clobbers target="window.Printer" />
+    <js-module src="www/NGXPrinter.js" name="NGXPrinter">
+        <clobbers target="window.NGXPrinter" />
     </js-module>
  
     <!-- android -->
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
-            <feature name="Printer">
-                <param name="android-package" value="org.anil.thermalprinter.Printer"/>
+            <feature name="NGXPrinter">
+                <param name="android-package" value="org.betterlife.printerngx.NGXPrinter"/>
             </feature>
         </config-file>
  
-        <source-file src="src/android/Printer.java" target-dir="src/org/anil/thermalprinter" />
-        <source-file src="src/android/libs/ZQPrinter.jar" target-dir="libs" />      
+        <source-file src="src/android/NGXPrinter.java" target-dir="src/org/betterlife/printerngx" />
+        <source-file src="src/android/libs/NGXPrinter0.9.4.jar" target-dir="libs" />     
      </platform>          
 </plugin>

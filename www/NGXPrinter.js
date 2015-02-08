@@ -10,7 +10,7 @@ module.exports = {
             }]
         ); 
     },
-    showDeviceList: function(){
+    showDeviceList: function(successCallback,errorCallback){
         cordova.exec(
             successCallback,
             errorCallback,

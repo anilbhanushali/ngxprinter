@@ -178,17 +178,15 @@ public class NGXPrinter extends CordovaPlugin {
 	
 	
 	private void PrintText(String macid,String text,int alignment,int attribute,int textsize){
-		if(!conn){
-			ShowDeviceList();
+		if(conn){
+			mBtp.printText(text);
 		}
-		mBtp.printText(text);
 	}
 	
 	private void PrintImage(String macid,String file){
 				
-				if(!conn){
-					ShowDeviceList();
-				}
+				if(conn){
+
 				InputStream input;
 				String path="";
 				boolean result=true;
@@ -225,6 +223,7 @@ public class NGXPrinter extends CordovaPlugin {
 					e.printStackTrace();
 					result = false;
 				}
+			}
 				
 	}
 	void CheckGC(String FunctionName )

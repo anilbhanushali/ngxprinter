@@ -1,4 +1,13 @@
 module.exports = {
+    getStatus: function(successCallback, errorCallback) {
+        cordova.exec(
+            successCallback, // success callback function
+            errorCallback, // error callback function
+            'NGXPrinter', // mapped to our native Java class called "NGXPrinter"
+            'getstatus', // with this action name
+            []
+        ); 
+    },
     connectPrinter: function(address, successCallback, errorCallback) {
         cordova.exec(
             successCallback, // success callback function

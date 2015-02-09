@@ -5,6 +5,7 @@ import com.ngx.*;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaActivity;
 import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.PluginResult;
 import org.apache.http.client.protocol.ClientContext;
 import org.json.JSONObject;
 import org.json.JSONArray;
@@ -35,17 +36,26 @@ public class NGXPrinter extends CordovaPlugin {
 	public static final String ACTION_PRINT_TEXT = "printtext";
 	public static final String ACTION_PRINT_IMAGE="printimage";
 	public static final String ACTION_SHOW_DEVICE="showdevicelist";
+	public static final String ACTION_GETSTATUS="getstatus";
 	
-	private static final String TAG = "Test";
+	private static final String TAG = "NGXPLUGIN";
     public static BluetoothPrinter mBtp = BluetoothPrinter.INSTANCE;
     private boolean conn = false;
     private Context ctx ;
     private String mConnectedDeviceName = "";
     Activity activity ;
     private CallbackContext callbackContext;
-    
+    private String callbackid = null;
     public NGXPrinter(){
     	Log.e(TAG, "+++ ON Contructor +++");
+    }
+    
+    @Override
+    public void pluginInitialize(){
+    	super.pluginInitialize();
+    	ctx = cordova.getActivity().getApplicationContext();
+		activity = (Activity)cordova.getActivity();
+    	mBtp.initService(ctx, mHandler);
     }
     
     private Handler mHandler = new Handler() {
@@ -56,17 +66,30 @@ public class NGXPrinter extends CordovaPlugin {
 				switch (msg.arg1) {
 				case BluetoothPrinter.STATE_CONNECTED:
 					conn=true;
-					callbackContext.success("Connected to : "+mConnectedDeviceName);
 					Log.i(TAG,"connected to : "+mConnectedDeviceName);
+					if(callbackid != null){
+						PluginResult result=new PluginResult(PluginResult.Status.OK,"Connected to : "+mConnectedDeviceName);
+						result.setKeepCallback(true);
+						callbackContext.sendPluginResult(result);
+					}
 					break;
 				case BluetoothPrinter.STATE_CONNECTING:
 					Log.i(TAG,"connecting");
-					callbackContext.success("Connecting..");
+					if(callbackid != null){
+						PluginResult result=new PluginResult(PluginResult.Status.OK,"Connecting..");
+						result.setKeepCallback(true);
+						callbackContext.sendPluginResult(result);
+					}
 					break;
 				case BluetoothPrinter.STATE_LISTEN:
 				case BluetoothPrinter.STATE_NONE:
-					callbackContext.success("Not Connected");
+					conn=false;
 					Log.i(TAG,"Not Connected");
+					if(callbackid != null){
+						PluginResult result=new PluginResult(PluginResult.Status.OK,"Not Connected");
+						result.setKeepCallback(true);
+						callbackContext.sendPluginResult(result);
+					}
 					break;
 				}
 				break;
@@ -79,32 +102,42 @@ public class NGXPrinter extends CordovaPlugin {
 				String status = msg.getData().getString(
 						BluetoothPrinter.STATUS_TEXT);
 				Log.i(TAG,"Status : "+status);
-				callbackContext.success(status);
+				if(callbackid != null){
+					PluginResult result=new PluginResult(PluginResult.Status.OK,status);
+					result.setKeepCallback(true);
+					callbackContext.sendPluginResult(result);
+				}
 				break;
 			default:
 				break;
 			}
 		}
     };
+    
 	@Override
-	public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+	public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException
+	{
 		
 		try {
 			
-			this.callbackContext = callbackContext;
-			ctx = cordova.getActivity().getApplicationContext();
-			activity = (Activity)cordova.getActivity();
-			mBtp.initService(ctx, mHandler);
-		    
-			if (ACTION_CONNECT_PRINTER.equals(action)) { 
+			if(ACTION_GETSTATUS.equals(action)){
+				 
+				 this.callbackContext = callbackContext;
+				 this.callbackid = callbackContext.getCallbackId();
+	             PluginResult result=new PluginResult(PluginResult.Status.NO_RESULT,"");
+	 			 result.setKeepCallback(true);
+	 			 callbackContext.sendPluginResult(result);
+	 		     return true;
+			}
+			else if (ACTION_CONNECT_PRINTER.equals(action)) { 
 		    	
 		    	//call connect printer method
 		    	JSONObject arg_object = args.getJSONObject(0);
 	             String macid = arg_object.getString("macaddress");
 	             Connect(macid);
-	             
+	             return true;
 		    }
-		    if (ACTION_PRINT_TEXT.equals(action)) { 
+			else if (ACTION_PRINT_TEXT.equals(action)) { 
 		    	
 		    	//call print text method
 		    	 JSONObject arg_object = args.getJSONObject(0);
@@ -113,35 +146,49 @@ public class NGXPrinter extends CordovaPlugin {
 	             int alignment = arg_object.getInt("alignment");
 	             int attribute = arg_object.getInt("attribute");
 	             int textsize = arg_object.getInt("textsize");
-	             
 	             PrintText(macid,text, alignment, attribute, textsize);
+	             callbackContext.success();
+	             return true;
 		    }
-		    
-		    if(ACTION_PRINT_IMAGE.equals(action)){
+			else if(ACTION_PRINT_IMAGE.equals(action)){
 		    	JSONObject arg_object = args.getJSONObject(0);
 	            String file = arg_object.getString("file");
 	            String macid = arg_object.getString("macaddress");
 	            PrintImage(macid,file);
+	            callbackContext.success();
+	            return true;
+	            
 		    }
-		    if(ACTION_SHOW_DEVICE.endsWith(action)){
+			else if(ACTION_SHOW_DEVICE.endsWith(action)){
 		    	ShowDeviceList();
+		    	return true;
 		    }
-		    return true;
+			
+			return false;
+			
+		    
 		} catch(Exception e) {
 		    System.err.println("Exception: " + e.getMessage());
-		    callbackContext.error(e.getMessage());
+		    
+		    PluginResult result = new PluginResult(PluginResult.Status.ERROR, e.getMessage());
+			callbackContext.sendPluginResult(result);
 		    return false;
 		}	 
 	};
 	
 	
 	private void PrintText(String macid,String text,int alignment,int attribute,int textsize){
-		
+		if(!conn){
+			ShowDeviceList();
+		}
 		mBtp.printText(text);
 	}
 	
 	private void PrintImage(String macid,String file){
 				
+				if(!conn){
+					ShowDeviceList();
+				}
 				InputStream input;
 				String path="";
 				boolean result=true;
@@ -200,11 +247,12 @@ public class NGXPrinter extends CordovaPlugin {
     	Log.i(TAG,FunctionName+"_After Memorypercentage"+Memorypercentage+"% VmtotalMemory["+VmtotalMemory+"] "+"VmfreeMemory["+VmfreeMemory+"] "+"VmmaxMemory["+VmmaxMemory+"] ");
     }
 	private void ShowDeviceList(){
+		mBtp.clearPreferredPrinter();
 		mBtp.showDeviceList(activity);
 	}
 	private void Connect(String address){
 		
-		if(!conn)
+		if(!conn && !address.isEmpty())
 		{
 			mBtp.connectToPrinterUsingMacAddress(address);
 		}
@@ -214,6 +262,7 @@ public class NGXPrinter extends CordovaPlugin {
 	public void onPause(boolean multitasking) {
 		conn=false;
 		mBtp.onActivityPause();
+		Log.e(TAG, "+++ ON Activity pause +++");
 		super.onPause(multitasking);
 	}
 
@@ -221,13 +270,15 @@ public class NGXPrinter extends CordovaPlugin {
 	public void onResume(boolean multitasking) {
 		mBtp.onActivityResume();
 		DebugLog.logTrace("onResume");
+		Log.e(TAG, "+++ ON Activity Resume +++");
 		super.onResume(multitasking);
 	}
-
+	
 	@Override
 	public void onDestroy() {
 		conn=false;
 		mBtp.onActivityDestroy();
+		Log.e(TAG, "+++ ON Activity Destroy +++");
 		super.onDestroy();
 	}
 

@@ -133,7 +133,7 @@ public class NGXPrinter extends CordovaPlugin {
 		    	
 		    	//call connect printer method
 		    	JSONObject arg_object = args.getJSONObject(0);
-	             String macid = arg_object.getString("macaddress");
+	             String macid = "xx";
 	             Connect(macid);
 	             return true;
 		    }
@@ -142,7 +142,7 @@ public class NGXPrinter extends CordovaPlugin {
 		    	//call print text method
 		    	 JSONObject arg_object = args.getJSONObject(0);
 	             String text = arg_object.getString("text");
-	             String macid = arg_object.getString("macaddress");
+	             String macid = "xx";
 	             int alignment = arg_object.getInt("alignment");
 	             int attribute = arg_object.getInt("attribute");
 	             int textsize = arg_object.getInt("textsize");
@@ -153,7 +153,7 @@ public class NGXPrinter extends CordovaPlugin {
 			else if(ACTION_PRINT_IMAGE.equals(action)){
 		    	JSONObject arg_object = args.getJSONObject(0);
 	            String file = arg_object.getString("file");
-	            String macid = arg_object.getString("macaddress");
+	            String macid = "xx";
 	            PrintImage(macid,file);
 	            callbackContext.success();
 	            return true;

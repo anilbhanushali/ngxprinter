@@ -28,6 +28,15 @@ module.exports = {
             []
         );
     },
+    clearPrinters: function(successCallback,errorCallback){
+        cordova.exec(
+            successCallback,
+            errorCallback,
+            'NGXPrinter',
+            'clearprinters',
+            []
+        );
+    },
     PrintText : function(macaddress,text, alignment, attribute, textsize,successCallback,errorCallback){
         cordova.exec(
             successCallback, // success callback function

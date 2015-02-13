@@ -37,6 +37,7 @@ public class NGXPrinter extends CordovaPlugin {
 	public static final String ACTION_PRINT_IMAGE="printimage";
 	public static final String ACTION_SHOW_DEVICE="showdevicelist";
 	public static final String ACTION_GETSTATUS="getstatus";
+	public static final String ACTION_CLEARPRINTER="clearprinters";
 	
 	private static final String TAG = "NGXPLUGIN";
     public static BluetoothPrinter mBtp = BluetoothPrinter.INSTANCE;
@@ -137,6 +138,10 @@ public class NGXPrinter extends CordovaPlugin {
 	             Connect(macid);
 	             return true;
 		    }
+			else if (ACTION_CLEARPRINTER.equals(action)) { 
+		    	ClearPrinters();
+		    	return true;
+		    }
 			else if (ACTION_PRINT_TEXT.equals(action)) { 
 		    	
 		    	//call print text method
@@ -179,6 +184,34 @@ public class NGXPrinter extends CordovaPlugin {
 	
 	private void PrintText(String macid,String text,int alignment,int attribute,int textsize){
 		if(conn){
+			switch(attribute){
+			case 0:
+				mBtp.setPrintFontStyle(BtpCommands.FONT_STYLE_REGULAR);
+				break;
+			case 1:
+				mBtp.setPrintFontStyle(BtpCommands.FONT_STYLE_BOLD);
+				break;
+			default:
+				mBtp.setPrintFontStyle(BtpCommands.FONT_STYLE_REGULAR);
+				break;
+			}
+			switch(textsize){
+			case 0:
+				mBtp.setPrintFontSize(BtpCommands.FONT_SIZE_NORMAL);
+				break;
+			case 1:
+				mBtp.setPrintFontSize(BtpCommands.FONT_SIZE_DOUBLE_W_H);
+				break;
+			case 2:
+				mBtp.setPrintFontSize(BtpCommands.FONT_SIZE_DOUBLE_WIDTH);
+				break;
+			case 3:
+				mBtp.setPrintFontSize(BtpCommands.FONT_SIZE_DOUBLE_HEIGHT);
+				break;
+			default:
+				mBtp.setPrintFontSize(BtpCommands.FONT_SIZE_NORMAL);
+				break;
+			}
 			mBtp.printText(text);
 		}
 	}
@@ -245,9 +278,13 @@ public class NGXPrinter extends CordovaPlugin {
      	  Memorypercentage=((VmtotalMemory-VmfreeMemory)*100)/VmtotalMemory; 
     	Log.i(TAG,FunctionName+"_After Memorypercentage"+Memorypercentage+"% VmtotalMemory["+VmtotalMemory+"] "+"VmfreeMemory["+VmfreeMemory+"] "+"VmmaxMemory["+VmmaxMemory+"] ");
     }
+	
 	private void ShowDeviceList(){
-		mBtp.clearPreferredPrinter();
 		mBtp.showDeviceList(activity);
+	}
+	
+	private void ClearPrinters(){
+		mBtp.clearPreferredPrinter();
 	}
 	private void Connect(String address){
 		

@@ -34,10 +34,13 @@ import java.io.OutputStream;
 public class NGXPrinter extends CordovaPlugin {
 	public static final String ACTION_CONNECT_PRINTER = "connect";
 	public static final String ACTION_PRINT_TEXT = "printtext";
+	public static final String ACTION_SET_IMAGE="setimage";
 	public static final String ACTION_PRINT_IMAGE="printimage";
 	public static final String ACTION_SHOW_DEVICE="showdevicelist";
 	public static final String ACTION_GETSTATUS="getstatus";
 	public static final String ACTION_CLEARPRINTER="clearprinters";
+	public static final String ACTION_SETFONTSIZE="setfontsize";
+	public static final String ACTION_SETFONTSTYLE="setfontstyle";
 	
 	private static final String TAG = "NGXPLUGIN";
     public static BluetoothPrinter mBtp = BluetoothPrinter.INSTANCE;
@@ -134,9 +137,9 @@ public class NGXPrinter extends CordovaPlugin {
 		    	
 		    	//call connect printer method
 		    	JSONObject arg_object = args.getJSONObject(0);
-	             String macid = "xx";
-	             Connect(macid);
-	             return true;
+	            String macid = "xx";
+	            Connect(macid);
+	            return true;
 		    }
 			else if (ACTION_CLEARPRINTER.equals(action)) { 
 		    	ClearPrinters();
@@ -155,19 +158,37 @@ public class NGXPrinter extends CordovaPlugin {
 	             callbackContext.success();
 	             return true;
 		    }
-			else if(ACTION_PRINT_IMAGE.equals(action)){
+			else if(ACTION_SET_IMAGE.equals(action)){
 		    	JSONObject arg_object = args.getJSONObject(0);
 	            String file = arg_object.getString("file");
-	            String macid = "xx";
-	            PrintImage(macid,file);
+	            SetImage(file);
 	            callbackContext.success();
 	            return true;
 	            
+		    }
+			else if(ACTION_PRINT_IMAGE.equals(action)){
+	            PrintImage();
+	            callbackContext.success();
+	            return true;	            
 		    }
 			else if(ACTION_SHOW_DEVICE.endsWith(action)){
 		    	ShowDeviceList();
 		    	return true;
 		    }
+			else if(ACTION_SETFONTSIZE.equals(action)){
+				 JSONObject arg_object = args.getJSONObject(0);
+	             int textsize = arg_object.getInt("textsize");
+	             SetFontSize(textsize);
+	             callbackContext.success();
+				return true;
+			}
+			else if(ACTION_SETFONTSTYLE.equals(action)){
+				 JSONObject arg_object = args.getJSONObject(0);
+	             int attribute = arg_object.getInt("attribute");
+	             SetFontStyle(attribute);
+	             callbackContext.success();
+				return true;
+			}
 			
 			return false;
 			
@@ -180,85 +201,98 @@ public class NGXPrinter extends CordovaPlugin {
 		    return false;
 		}	 
 	};
-	
-	
+		
 	private void PrintText(String macid,String text,int alignment,int attribute,int textsize){
 		if(conn){
-			switch(attribute){
-			case 0:
-				mBtp.setPrintFontStyle(BtpCommands.FONT_STYLE_REGULAR);
-				break;
-			case 1:
-				mBtp.setPrintFontStyle(BtpCommands.FONT_STYLE_BOLD);
-				break;
-			default:
-				mBtp.setPrintFontStyle(BtpCommands.FONT_STYLE_REGULAR);
-				break;
-			}
-			switch(textsize){
-			case 0:
-				mBtp.setPrintFontSize(BtpCommands.FONT_SIZE_NORMAL);
-				break;
-			case 1:
-				mBtp.setPrintFontSize(BtpCommands.FONT_SIZE_DOUBLE_W_H);
-				break;
-			case 2:
-				mBtp.setPrintFontSize(BtpCommands.FONT_SIZE_DOUBLE_WIDTH);
-				break;
-			case 3:
-				mBtp.setPrintFontSize(BtpCommands.FONT_SIZE_DOUBLE_HEIGHT);
-				break;
-			default:
-				mBtp.setPrintFontSize(BtpCommands.FONT_SIZE_NORMAL);
-				break;
-			}
 			mBtp.printText(text);
 		}
 	}
 	
-	private void PrintImage(String macid,String file){
-				
-				if(conn){
-
-				InputStream input;
-				String path="";
-				boolean result=true;
-				try{
-					input = ctx.getAssets().open("www/"+file);
-					int size = input.available();
-		             byte[] buffer = new byte[size];
-		             input.read(buffer);
-		             input.close();
-		             
-		             String strpngFile = ctx.getApplicationContext().getFilesDir().getAbsolutePath() + "/"+file;
-		             File fileobj = new File(strpngFile);
-		     		if (!fileobj.exists())
-		     		{
-		     			try {
-		 					FileOutputStream fs = new FileOutputStream(strpngFile);
-		 		            fs.write(buffer, 0, size);
-		 				} catch (IOException e) {
-		 					// TODO Auto-generated catch block
-		 					e.printStackTrace();
-		 					result = false;
-		 				}
-		     		}
-		     		//////
-		     		boolean returnvalue=false;
-		     		//Bitmap bm = BitmapFactory.decodeFile(strpngFile);
-		     		//returnvalue = Connect(macid);
-					//mBtp.printImage(buffer);
-					mBtp.setLogo(strpngFile, true, false, 127);
-					mBtp.printLogo();	
-		             
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					result = false;
-				}
-			}
-				
+	private void SetFontStyle(int attribute){
+		switch(attribute){
+		case 0:
+			mBtp.setPrintFontStyle(BtpCommands.FONT_STYLE_REGULAR);
+			break;
+		case 1:
+			mBtp.setPrintFontStyle(BtpCommands.FONT_STYLE_BOLD);
+			break;
+		default:
+			mBtp.setPrintFontStyle(BtpCommands.FONT_STYLE_REGULAR);
+			break;
+		}
 	}
+	
+	private void SetFontSize(int textsize){
+		switch(textsize){
+		case 0:
+			mBtp.setPrintFontSize(BtpCommands.FONT_SIZE_NORMAL);
+			break;
+		case 1:
+			mBtp.setPrintFontSize(BtpCommands.FONT_SIZE_DOUBLE_W_H);
+			break;
+		case 2:
+			mBtp.setPrintFontSize(BtpCommands.FONT_SIZE_DOUBLE_WIDTH);
+			break;
+		case 3:
+			mBtp.setPrintFontSize(BtpCommands.FONT_SIZE_DOUBLE_HEIGHT);
+			break;
+		default:
+			mBtp.setPrintFontSize(BtpCommands.FONT_SIZE_NORMAL);
+			break;
+		}
+	}
+	
+	private void PrintImage(){
+		
+		if(conn){
+			mBtp.printLogo();
+		}		
+	}
+	
+	private void SetImage(String file){
+		
+		if(conn){
+
+		InputStream input;
+		String path="";
+		boolean result=true;
+		try{
+			input = ctx.getAssets().open("www/"+file);
+			int size = input.available();
+             byte[] buffer = new byte[size];
+             input.read(buffer);
+             input.close();
+             
+             String strpngFile = ctx.getApplicationContext().getFilesDir().getAbsolutePath() + "/"+file;
+             File fileobj = new File(strpngFile);
+     		if (!fileobj.exists())
+     		{
+     			try {
+ 					FileOutputStream fs = new FileOutputStream(strpngFile);
+ 		            fs.write(buffer, 0, size);
+ 				} catch (IOException e) {
+ 					// TODO Auto-generated catch block
+ 					e.printStackTrace();
+ 					result = false;
+ 				}
+     		}
+     		//////
+     		boolean returnvalue=false;
+     		//Bitmap bm = BitmapFactory.decodeFile(strpngFile);
+     		//returnvalue = Connect(macid);
+			//mBtp.printImage(buffer);
+			mBtp.setLogo(strpngFile, true, false, 127);
+			//mBtp.printLogo();	
+             
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			result = false;
+		}
+	}
+		
+}
+	
 	void CheckGC(String FunctionName )
     {
     	long VmfreeMemory =Runtime.getRuntime().freeMemory();

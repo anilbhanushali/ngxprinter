@@ -1,5 +1,6 @@
 package org.betterlife.printerngx;
 
+import com.betterlife.nightingalenurse.R.string;
 import com.ngx.*;
 
 import org.apache.cordova.CallbackContext;
@@ -34,6 +35,8 @@ import java.io.OutputStream;
 public class NGXPrinter extends CordovaPlugin {
 	public static final String ACTION_CONNECT_PRINTER = "connect";
 	public static final String ACTION_PRINT_TEXT = "printtext";
+	public static final String ACTION_SET_ALIGNMENT  = "setalignment";
+	public static final String ACTION_SET_LINEFEED="setlinefeed";
 	public static final String ACTION_SET_IMAGE="setimage";
 	public static final String ACTION_PRINT_IMAGE="printimage";
 	public static final String ACTION_SHOW_DEVICE="showdevicelist";
@@ -145,6 +148,23 @@ public class NGXPrinter extends CordovaPlugin {
 		    	ClearPrinters();
 		    	return true;
 		    }
+			else if (ACTION_SET_LINEFEED.equals(action)) { 		    	
+		    	//call set alignment method
+		    	 JSONObject arg_object = args.getJSONObject(0);
+	             String macid = "xx";
+	             SetLineFeed(macid);
+	             callbackContext.success();
+	             return true;
+		    }
+			else if (ACTION_SET_ALIGNMENT.equals(action)) { 		    	
+		    	//call set alignment method
+		    	 JSONObject arg_object = args.getJSONObject(0);
+	             String macid = "xx";
+	             int alignment = arg_object.getInt("alignment");
+	             SetAlighnment(macid,alignment);
+	             callbackContext.success();
+	             return true;
+		    }
 			else if (ACTION_PRINT_TEXT.equals(action)) { 
 		    	
 		    	//call print text method
@@ -161,9 +181,14 @@ public class NGXPrinter extends CordovaPlugin {
 			else if(ACTION_SET_IMAGE.equals(action)){
 		    	JSONObject arg_object = args.getJSONObject(0);
 	            String file = arg_object.getString("file");
-	            SetImage(file);
-	            callbackContext.success();
-	            return true;
+	            boolean result = SetImage(file);
+	            if(result){
+	            	callbackContext.success();
+	            }else{
+	            	callbackContext.error(mBtp.getPrinterStatusMessage());
+	            }
+	            return result;
+	            
 	            
 		    }
 			else if(ACTION_PRINT_IMAGE.equals(action)){
@@ -201,6 +226,20 @@ public class NGXPrinter extends CordovaPlugin {
 		    return false;
 		}	 
 	};
+	
+	private void SetAlighnment(String macid, int alignment){
+		switch(alignment){
+		case 0:
+			mBtp.setAlignment(BtpCommands.LEFT_ALIGN);
+			break;
+		case 1:
+			mBtp.setAlignment(BtpCommands.CENTER_ALIGN);
+			break;
+		default:
+			mBtp.setAlignment(BtpCommands.LEFT_ALIGN);
+			break;
+		}
+	}
 		
 	private void PrintText(String macid,String text,int alignment,int attribute,int textsize){
 		if(conn){
@@ -242,6 +281,13 @@ public class NGXPrinter extends CordovaPlugin {
 		}
 	}
 	
+	private void SetLineFeed(String macid){
+		
+		if(conn){
+			mBtp.printLineFeed();
+		}		
+	}
+	
 	private void PrintImage(){
 		
 		if(conn){
@@ -249,13 +295,13 @@ public class NGXPrinter extends CordovaPlugin {
 		}		
 	}
 	
-	private void SetImage(String file){
+	private boolean SetImage(String file){
 		
+		boolean result=false;
 		if(conn){
-
 		InputStream input;
 		String path="";
-		boolean result=true;
+		
 		try{
 			input = ctx.getAssets().open("www/"+file);
 			int size = input.available();
@@ -276,13 +322,9 @@ public class NGXPrinter extends CordovaPlugin {
  					result = false;
  				}
      		}
-     		//////
-     		boolean returnvalue=false;
-     		//Bitmap bm = BitmapFactory.decodeFile(strpngFile);
-     		//returnvalue = Connect(macid);
-			//mBtp.printImage(buffer);
-			mBtp.setLogo(strpngFile, true, false, 127);
-			//mBtp.printLogo();	
+     		
+			result = mBtp.setLogo(strpngFile, false, false);
+			mBtp.printLogo();	
              
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -290,6 +332,7 @@ public class NGXPrinter extends CordovaPlugin {
 			result = false;
 		}
 	}
+		return result;
 		
 }
 	

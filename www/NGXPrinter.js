@@ -60,6 +60,29 @@ module.exports = {
             }]
         ); 
     },
+    setLineFeed : function(macaddress, successCallback,errorCallback){
+        cordova.exec(
+            successCallback, // success callback function
+            errorCallback, // error callback function
+            'NGXPrinter', // mapped to our native Java class called "NGXPrinter"
+            'setlinefeed', // with this action name
+            [{   
+                "macaddress":macaddress,// and this array of custom arguments to create our entry
+            }]
+        ); 
+    },
+    setAlignment : function(macaddress, alignment, successCallback,errorCallback){
+        cordova.exec(
+            successCallback, // success callback function
+            errorCallback, // error callback function
+            'NGXPrinter', // mapped to our native Java class called "NGXPrinter"
+            'setalignment', // with this action name
+            [{   
+                "macaddress":macaddress,// and this array of custom arguments to create our entry
+                "alignment":alignment,
+            }]
+        ); 
+    },
     PrintText : function(macaddress,text, alignment, attribute, textsize,successCallback,errorCallback){
         cordova.exec(
             successCallback, // success callback function

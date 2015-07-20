@@ -1,6 +1,5 @@
 package org.betterlife.printerngx;
 
-import com.betterlife.nightingalenurse.R.string;
 import com.ngx.*;
 
 import org.apache.cordova.CallbackContext;
